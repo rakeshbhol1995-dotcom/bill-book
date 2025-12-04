@@ -65,12 +65,17 @@ const numberToWords = (num: any) => {
   const n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
   if (!n) return ''; 
   let str = '';
-  // FIX: Comparing Number(n[x]) instead of n[x] directly
-  str += (Number(n[1]) != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
-  str += (Number(n[2]) != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
-  str += (Number(n[3]) != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
-  str += (Number(n[4]) != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
-  str += (Number(n[5]) != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+  
+  // FIX: Helper function to safely convert string index to number for Typescript
+  const getVal = (idx: number) => Number(n[idx]);
+  const getDigit = (idx: number, pos: number) => parseInt(n[idx][pos] || '0');
+
+  str += (getVal(1) != 0) ? (a[getVal(1)] || b[getDigit(1, 0)] + ' ' + a[getDigit(1, 1)]) + 'Crore ' : '';
+  str += (getVal(2) != 0) ? (a[getVal(2)] || b[getDigit(2, 0)] + ' ' + a[getDigit(2, 1)]) + 'Lakh ' : '';
+  str += (getVal(3) != 0) ? (a[getVal(3)] || b[getDigit(3, 0)] + ' ' + a[getDigit(3, 1)]) + 'Thousand ' : '';
+  str += (getVal(4) != 0) ? (a[getVal(4)] || b[getDigit(4, 0)] + ' ' + a[getDigit(4, 1)]) + 'Hundred ' : '';
+  str += (getVal(5) != 0) ? ((str != '') ? 'and ' : '') + (a[getVal(5)] || b[getDigit(5, 0)] + ' ' + a[getDigit(5, 1)]) : '';
+  
   return str ? str + 'Only' : '';
 };
 
@@ -344,7 +349,9 @@ export default function App() {
   
   const [currentInvoice, setCurrentInvoice] = useState({
     id: '', invoiceNo: 101, date: new Date().toISOString().split('T')[0],
-    clientName: '', clientPhone: '', items: [], supplyType: 'intra'
+    clientName: '', clientPhone: '', 
+    items: [] as any[], // FIX: Typecast to prevent "never" error
+    supplyType: 'intra'
   });
 
   useEffect(() => {
